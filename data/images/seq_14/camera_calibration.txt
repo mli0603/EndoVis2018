@@ -1,0 +1,12 @@
+Width: 1280                                               // width of the images in pixels
+Height: 1024                                              // height of the images in pixels
+Camera-0-F: 1068.39 1068.19                               // left camera x,y focal dist in pixels
+Camera-0-C: 600.90 500.74                                 // left camera x,y center in pixels
+Camera-0-Alpha: 0.00000                                   // left camera skew
+Camera-0-K: -0.00087 0.00238 0.00012 0.00000 0.00000      // left camera radial distortion
+Camera-1-F: 1067.83 1067.60                               // right camera x,y focal dist in pixels
+Camera-1-C: 698.22 501.65                                 // right camera x,y center in pixels
+Camera-1-Alpha: 0.00000                                   // right camera skew
+Camera-1-K: -0.00158 0.00403 0.00009 0.00000 0.00000      // right camera radial distortion
+Extrinsic-Omega: -0.0001 -0.0013 0.0000                   // left to right camera rotation
+Extrinsic-T: -4.2773 -0.0440 -0.0303                      // left to right camera position

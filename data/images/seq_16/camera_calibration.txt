@@ -1,0 +1,14 @@
+Width: 1280                                               // width of the images in pixels
+Height: 1024                                              // height of the images in pixels
+Camera-0-F: 1081.85 1081.64                               // left camera x,y focal dist in pixels
+Camera-0-C: 600.38 508.57                                 // left camera x,y center in pixels
+Camera-0-K: -0.00271 0.01359 0.0 0.0 -0.01585             // left camera radial distortion
+Camera-1-F: 1081.02 1080.82                               // right camera x,y focal dist in pixels
+Camera-1-C: 700.73 509.23                                 // right camera x,y center in pixels
+Camera-1-Alpha: 0.00000                                   // right camera skew
+Camera-1-K: -0.00195 0.00839 0.0 0.0 -0.00697             // right camera radial distortion
+Extrinsic-Omega: -1.53345e-05 -0.00118 -1.61941e-05       // left to right camera rotation
+Extrinsic-T: -4.36901 -0.03091 -0.03944                   // left to right camera position
+
+{'Header': {'timestamp': 1531274945043147, 'entry_size': 166, 'seq_nr': 0}, 'Entry': {'orientation': 1, 'intrinsics': [{'alpha': 0.0, 'c': [, ], 'k': [], 'f': [900390625, 986328125]}, {'alpha': 0.0, 'c': [9711914062, 84240722656], 'k': [], 'f': [490234375, 3974609375]}], 'serialNumber': 1747066, 'focus': 1, 'height': 1024, 'extrinsics': {'om': [], 'T': []}, 'width': 1280}}
+
