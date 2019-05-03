@@ -7,6 +7,8 @@ from  PIL import Image
 import json
 import transforms
 
+from label_conversion import LabelConverter
+
 class MICCAIDataset(Dataset):
     def __init__(self, data_path="../data/", data_type = "train", transform=None):
         #store some input 
@@ -26,18 +28,19 @@ class MICCAIDataset(Dataset):
             entry["frame"] = file[i][1].strip().zfill(3)
             self.data.append(entry)
 
-        #parse labels.json
-        f = open(data_path+"labels.json").read()
-        labels = json.loads(f)
-        self.color2label = np.zeros(256**3)
-        self.label2name = []
-        self.class_num = len(labels)
-        for i in range(len(labels)):
-            color = labels[i]["color"]
-            self.color2label[(color[0]*256+color[1])*256+color[2]] = i
-            self.label2name.append(labels[i]["name"])
+#         #parse labels.json
+#         f = open(data_path+"labels.json").read()
+#         labels = json.loads(f)
+#         self.color2label = np.zeros(256**3)
+#         self.label2name = []
+#         self.class_num = len(labels)
+#         for i in range(len(labels)):
+#             color = labels[i]["color"]
+#             self.color2label[(color[0]*256+color[1])*256+color[2]] = i
+#             self.label2name.append(labels[i]["name"])
 
-
+        # save label conversion object
+        self.label_converter = LabelConverter(data_path)
 
     def __len__(self):
         #return the length of the data numbers
@@ -58,7 +61,8 @@ class MICCAIDataset(Dataset):
         label = label.resize((320, 256))
         label = np.array(label, dtype='int32')
         idx = (label[:, :, 0] * 256 + label[:, :, 1]) * 256 + label[:, :, 2]
-        label = self.color2label[idx]
+#         label = self.color2label[idx]
+        label = self.label_converter.color2label[idx]
         
         # augment dataset
         if self.transform is not None:
