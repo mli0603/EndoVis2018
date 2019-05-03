@@ -77,10 +77,66 @@ class MICCAIDataset(Dataset):
         return img,label
 
 
+class L2R_PretrainDataset(MICCAIDataset):
+    def __init__(self, data_path="../data/", data_type = "train", transform=None):
+        #store some input 
+        super(L2R_PretrainDataset, self).__init__(data_path, data_type, transform)
+
+    def __getitem__(self, idx):
+        img_path = self.data_path+"images/seq_"+self.data[idx]["seq"]+"/left_frames/frame"+self.data[idx]["frame"]+".png"
+        label_path = self.data_path+"images/seq_"+self.data[idx]["seq"]+"/right_frames/frame"+self.data[idx]["frame"]+".png"
+        #get img from file and resize it to 320x256 which is what we want
+        img = Image.open(img_path)
+        img = img.resize((320, 256))
+        img = np.array(img)
+        label = Image.open(label_path)
+        label = label.resize((320, 256))
+        label = np.array(label)
+        
+        # augment dataset
+        # if self.transform is not None:
+        #     img,label = transforms.augment(img,label) 
+        #     # apply totensor and normalization only to img
+        #     norm = transforms.Normalize()
+        #     img = norm(img)
+            
+        img = torch.from_numpy(img).permute(2, 0, 1)
+        label = torch.from_numpy(label).permute(2, 0, 1)
+        return img,label
+
+class Colorize_PretrainDataset(MICCAIDataset):
+    def __init__(self, data_path="../data/", data_type = "train", transform=None):
+        #store some input 
+        super(Colorize_PretrainDataset, self).__init__(data_path, data_type, transform)
+
+    def __getitem__(self, idx):
+        img_path = self.data_path+"images/seq_"+self.data[idx]["seq"]+"/left_frames/frame"+self.data[idx]["frame"]+".png"
+        img = Image.open(img_path).convert('L')
+        img = img.resize((320, 256))
+        img = np.array(img)
+        #print(img.shape)
+        label = Image.open(img_path)
+        label = label.resize((320, 256))
+        label = np.array(label)
+        
+        # augment dataset
+        # if self.transform is not None:
+        #     img,label = transforms.augment(img,label) 
+        #     # apply totensor and normalization only to img
+        #     norm = transforms.Normalize()
+        #     img = norm(img)
+            
+        img = torch.from_numpy(img)
+        label = torch.from_numpy(label).permute(2, 0, 1)
+        return img,label
+
+
+
 if __name__ == "__main__":
-    dataset = MICCAIDataset()
+    #dataset = MICCAIDataset()
+    dataset = Colorize_PretrainDataset()
     idx = 0
-    plt.imshow(dataset[idx][1])
+    plt.imshow(dataset[idx][1].permute(1,2,0))
     plt.show()
-    plt.imshow(dataset[idx][0].permute(1,2,0))
+    plt.imshow(dataset[idx][0], cmap="gray")
     plt.show()
