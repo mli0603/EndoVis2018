@@ -32,7 +32,7 @@ class DICELoss(nn.Module):
     
     
 # define dice loss function
-def dice_loss(logits, true, eps=1e-7):
+def diceloss(logits, true, eps=1e-7):
     """Computes the Sørensen–Dice loss.
     Note that PyTorch optimizers minimize a loss. In this
     case, we would like to maximize the dice loss so we
