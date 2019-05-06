@@ -1,11 +1,11 @@
 import cv2
-from google.colab.patches import cv2_imshow
+#from google.colab.patches import cv2_imshow
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 
 # install image_slicer
-!pip install image_slicer
+#!pip install image_slicer
 import image_slicer
 
 def Puzzle_RandomShuffle(path, n, seed):
