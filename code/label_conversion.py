@@ -3,7 +3,7 @@ import json
 import matplotlib.pyplot as plt
 
 class LabelConverter():
-    def __init__(self,data_path):
+    def __init__(self,data_path="../data/"):
         #parse labels.json
         f = open(data_path+"labels.json").read()
         labels = json.loads(f)
@@ -18,13 +18,24 @@ class LabelConverter():
             self._label2name.append(labels[i]["name"])
             self._label2color.append(color)
         self._label2color = np.array(self._label2color)
+        
+    def color2label(self,color):
+        #convert RGB colors to labels for classification
+        #input:
+            #color: RGB color image, np array (w*h*3)
+        #output:
+            #label: image containing classifcation result, np array (w*h)
+        label = self._color2label[color].astype(np.uint8)
+        return label
+        
     def label2color(self,label):
         #convert labels to RGB colors for visulization
         #input:
-            #label: label image (w*h)
+            #label: label image, permuted tensor (w*h*1)
         #output:
-            #image: colored image (w*h*3)
-        img = self._label2color[label].astype(np.uint8)
+            #image: colored image, np array (w*h*3)
+        img = label.squeeze() # squeeze out the single unused channel
+        img = self._label2color[img].astype(np.uint8)
         return img
 
     def label2superlabel(self,label):

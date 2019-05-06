@@ -204,7 +204,7 @@ class RandomFlip:
         self.prob = prob
 
     def __call__(self, img, mask=None):
-        print("random flip")
+#         print("random flip")
         if random.random() < self.prob:
             d = random.randint(-1, 1)
             img = cv2.flip(img, d)
@@ -352,7 +352,7 @@ class ShiftScaleRotate:
         self.prob = prob
 
     def __call__(self, img, mask=None):
-        print("shiftscalerotate")
+#         print("shiftscalerotate")
         if random.random() < self.prob:
             height, width, channel = img.shape
 
@@ -478,8 +478,8 @@ class Distort1:
         self.prob = prob
 
     def __call__(self, img, mask=None):
-        print("distort 1")
         if random.random() < self.prob:
+#             print("distort 1")
             height, width, channel = img.shape
 
             if 0:
@@ -510,13 +510,12 @@ class Distort1:
             img = np.rot90(img,1)
             img = cv2.flip(img,0)
 #             img = img.reshape(img.shape[1],img.shape[0],img.shape[2])
-            print(img.shape)
+#             print(img.shape)
             if mask is not None:
                 mask = cv2.remap(mask, map_x, map_y, interpolation=cv2.INTER_NEAREST)
                 mask = np.rot90(mask,1)
                 mask = cv2.flip(mask,0)
-        else:
-            print("no distort 1")
+
         return img, mask
 
 class Distort2:
@@ -532,7 +531,7 @@ class Distort2:
 
     def __call__(self, img, mask=None):
         if random.random() < self.prob:
-            print("distort 2")
+#             print("distort 2")
             height, width, channel = img.shape
 
             x_step = width // self.num_steps
@@ -592,7 +591,7 @@ class RandomFilter:
 
     def __call__(self, img):
         if random.random() < self.prob:
-            print("Random Filter")
+#             print("Random Filter")
             alpha = self.limit * random.uniform(0, 1)
             kernel = np.ones((3, 3), np.float32) / 9 * 0.2
 
@@ -715,7 +714,7 @@ class RandomContrast:
 
     def __call__(self, img):
         if random.random() < self.prob:
-            print("Random Contrast")
+#             print("Random Contrast")
             alpha = 1.0 + self.limit * random.uniform(-1, 1)
 
             gray = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2GRAY)
@@ -794,7 +793,7 @@ def augment(x, mask=None, prob=0.5):
 #             ])(x, mask)
     return DualCompose([
         OneOf([Distort1(distort_limit=0.15, shift_limit=0.25),
-               Distort2(num_steps=2, distort_limit=0.2),
+#                Distort2(num_steps=2, distort_limit=0.2),
                ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.10, rotate_limit=45),
                RandomFlip(prob=0.25)]),
         OneOf([ImageOnly(RandomContrast(limit=0.2, prob=0.8)),
@@ -810,7 +809,7 @@ class RandomNoise:
 
     def __call__(self, image):
         if random.random() < self.prob:
-            print("Random noise")
+#             print("Random noise")
             prob = random.random()
             if prob >= 0.0 and prob < 0.33:
                 image = noisy("gauss", image)
