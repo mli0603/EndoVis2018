@@ -5,8 +5,10 @@ import torch.nn.functional as F
 class DICELoss(nn.Module):
     #DICE Loss Function
 
-    def __init__(self):
+    def __init__(self, weights):
+        #weights(tensor): weights for every class when calculating dice loss
         super(DICELoss, self).__init__()
+        self.weights = weights
 
     def forward(self, scores, target):
         """DICE Loss
@@ -25,5 +27,5 @@ class DICELoss(nn.Module):
             iflat = scores[:,cl,:,:].contiguous().view(-1)
             tflat = target_one_hot[:,cl,:,:].contiguous().view(-1)
             intersection = (iflat * tflat).sum()
-            loss += 1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth))
-        return loss/number_of_classes
+            loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
+        return loss/self.weights.sum()
