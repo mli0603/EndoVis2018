@@ -8,6 +8,7 @@ import json
 import transforms
 
 from label_conversion import LabelConverter
+from shuffle_puzzle import Puzzle_RandomShuffle
 from visualization import *
 
 class MICCAIDataset(Dataset):
@@ -110,6 +111,52 @@ class Colorize_PretrainDataset(MICCAIDataset):
         label = torch.from_numpy(label).permute(2, 0, 1)
         return img,label
 
+class Shuffle_PretrainDataset(MICCAIDataset):
+    def __init__(self, data_path="../data/", data_type = "train", transform=None, n=30,seed =1):
+        self.data_path = data_path
+        self.data_type = data_type
+        self.transform = transform
+        self.filename = data_path+"index/"+data_type+"_data.txt"
+        self.n = n
+        self.seed = seed
+        self.data = []
+
+        #parse the txt to store the necessary information of output
+        file = open(self.filename, 'r').readlines()
+        file = file[1:]
+        for i in range(len(file)):
+            file[i] = file[i].split(",")
+            entry = {}
+            entry["seq"] = file[i][0].strip()
+            entry["frame"] = file[i][1].strip().zfill(3)
+            self.data.append(entry)
+        #store some input 
+        #super(Shuffle_PretrainDataset, self).__init__(data_path, data_type, transform,n)
+    def __len__(self):
+        #return the length of the data numbers
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        img_path = self.data_path+"images/seq_"+self.data[idx]["seq"]+"/left_frames/frame"+self.data[idx]["frame"]+".png"
+        img = Puzzle_RandomShuffle(img_path, self.n, self.seed)
+        img = img.resize((320, 256))
+        img = np.array(img)
+
+        label = Image.open(img_path)
+        label = label.resize((320, 256))
+        label = np.array(label)
+        
+        # augment dataset
+        # if self.transform is not None:
+        #     img,label = transforms.augment(img,label) 
+        #     # apply totensor and normalization only to img
+        #     norm = transforms.Normalize()
+        #     img = norm(img)
+        #pil2tensor = transforms.ToTensor()    
+        #img = pil2tensor(img)
+        img = torch.from_numpy(img)
+        label = torch.from_numpy(label).permute(2, 0, 1)
+        return img,label
 
 
 if __name__ == "__main__":
@@ -132,4 +179,12 @@ if __name__ == "__main__":
     plt.imshow(dataset[idx][0].permute(1,2,0))
     plt.show()
     plt.imshow(dataset[idx][1].permute(1,2,0))
+
+    #dataset = MICCAIDataset()
+    #dataset = Colorize_PretrainDataset()
+    dataset = Shuffle_PretrainDataset()
+    idx = 0
+    plt.imshow(dataset[idx][1].permute(1,2,0))
+    plt.show()
+    plt.imshow(dataset[idx][0])
     plt.show()
