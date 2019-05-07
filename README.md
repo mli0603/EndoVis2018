@@ -6,4 +6,4 @@ MICCAI challenge for EndoVis2018
 pip install tensorboardX
 pip install tensorflow
 
-start tensorboard by "tensorboard --logdir <dir_to_store_log_file>"
+start tensorboard by "tensorboard --logdir=<dir_to_store_log_file>"
