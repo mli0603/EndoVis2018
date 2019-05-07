@@ -18,17 +18,18 @@ class DICELoss(nn.Module):
             targets (tensor): Ground truth labels,
                 shape: [batch_size,]
         """
+        scores = F.softmax(scores, dim=1)
         number_of_classes = scores.shape[1]
         target_one_hot = torch.zeros_like(scores)
         target_one_hot.scatter_(1, target.view(scores.shape[0],1,scores.shape[2],scores.shape[3]), 1)
-        smooth = 0.001
+        smooth = 1e-7
         loss = 0
         for cl in range(number_of_classes):
             iflat = scores[:,cl,:,:].contiguous().view(-1)
             tflat = target_one_hot[:,cl,:,:].contiguous().view(-1)
             intersection = (iflat * tflat).sum()
-            loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
-        return loss/self.weights.sum()
+            loss += (1 - ((2. * intersection) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
+        return loss/self.weights.sum(), scores, target_one_hot
     
     
 # define dice loss function
@@ -91,6 +92,13 @@ def label_accuracy(probas, true_1_hot):
     
     return tp, fp, fn
 
+if __name__ == "__main__":
+    x = torch.rand([1,3,2,2])
+    gt = torch.tensor([[[1,2],[2,0]]])
+    weights = torch.tensor([1.0,1,1])
+    DICE = DICELoss(weights)
+    print(diceloss(x, gt)[0])#, diceloss(x, gt)[1], diceloss(x, gt)[2])
+    print(DICE(x, gt)[0])#, DICE(x, gt)[1], DICE(x, gt)[2])
 # # test functions
 # x = torch.tensor([[[0.1,0.2],[0.3,0.4]],[[0.2,0.3],[0.3,0.4]],[[0.3,0.4],[0.4,0.5]]]).reshape(1,3,2,2)
 # print('x\n',x)
