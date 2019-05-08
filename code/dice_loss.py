@@ -33,7 +33,7 @@ class DICELoss(nn.Module):
     
     
 # define dice loss function
-def diceloss(logits, true, eps=1e-7):
+def dice_loss_max(logits, true, eps=1e-7):
     """Computes the Sørensen–Dice loss.
     Note that PyTorch optimizers minimize a loss. In this
     case, we would like to maximize the dice loss so we
@@ -99,6 +99,7 @@ if __name__ == "__main__":
     DICE = DICELoss(weights)
     print(diceloss(x, gt)[0])#, diceloss(x, gt)[1], diceloss(x, gt)[2])
     print(DICE(x, gt)[0])#, DICE(x, gt)[1], DICE(x, gt)[2])
+    
 # # test functions
 # x = torch.tensor([[[0.1,0.2],[0.3,0.4]],[[0.2,0.3],[0.3,0.4]],[[0.3,0.4],[0.4,0.5]]]).reshape(1,3,2,2)
 # print('x\n',x)

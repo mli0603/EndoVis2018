@@ -3,7 +3,7 @@ import torchvision
 from torch import nn
 from torch.autograd import Variable
 import torch.nn.functional as functional
-from dice_loss import diceloss,label_accuracy
+from dice_loss import * 
 from visualization import *
 
 # TODO: when training, turn this false
@@ -47,8 +47,8 @@ def train(model,device,scheduler,optimizer,dice_loss,train_generator,train_datas
         
         # forward + backprop + optimize
         outputs = model(img)
-        loss,_,_ = diceloss(outputs,label.long().squeeze(1))
-#         loss = dice_loss.forward(outputs, label.long())
+#         loss,_,_ = dice_loss_max(outputs,label.long().squeeze(1))
+        loss,_,_ = dice_loss.forward(outputs, label.long())
         loss.backward()
         optimizer.step()
 
@@ -56,6 +56,9 @@ def train(model,device,scheduler,optimizer,dice_loss,train_generator,train_datas
         running_loss += loss.item() * img.size(0)    
         writer.add_scalar('data/training_loss',loss.item(),n_itr)
         n_itr = n_itr + 1
+        
+        if debug:
+            break
                 
     train_loss = running_loss / len(train_dataset)
     print('Epoch Loss: {:.4f}'.format(train_loss))
@@ -92,7 +95,8 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         # forward
         outputs = model(img)
         # get loss
-        loss, probas, true_1_hot = diceloss(outputs,label.long().squeeze(1))
+#         loss, probas, true_1_hot = dice_loss_max(outputs,label.long().squeeze(1))
+        loss, probas, true_1_hot = dice_loss.forward(outputs, label.long())
 
         # statistics
         validation_loss += loss.item() * img.size(0)
@@ -103,6 +107,9 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         tp += curr_tp
         fp += curr_fp
         fn += curr_fn
+        
+        if debug:
+            break
             
     validation_loss = validation_loss / len(validation_dataset)
     print('Vaildation Loss: {:.4f}'.format(validation_loss))
@@ -132,7 +139,8 @@ def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
         # forward
         outputs = model(img)
         # get loss
-        loss, probas, true_1_hot = diceloss(outputs,label.long().squeeze(1))
+#         loss, probas, true_1_hot = dice_loss_max(outputs,label.long().squeeze(1))
+        loss, probas, true_1_hot = dice_loss.forward(outputs, label.long())
 
         # statistics
         test_loss += loss.item() * img.size(0)        
