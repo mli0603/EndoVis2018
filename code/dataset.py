@@ -161,30 +161,36 @@ class Shuffle_PretrainDataset(MICCAIDataset):
 
 if __name__ == "__main__":
     dataset=MICCAIDataset(transform=transforms)
-    label_converter = LabelConverter()
-    idx = 0
-    imshow(dataset[idx][0].permute(1,2,0),denormalize=True)
-    tmp = label_converter.label2color(dataset[idx][1].permute(1,2,0))
-    imshow(tmp)
+    count = torch.zeros(12, dtype=torch.long)
+    for i in range(len(dataset)):
+        label = dataset[i][1]
+        for j in range(12):
+            count[j] += (label == j).sum()
+
+    # label_converter = LabelConverter()
+    # idx = 0
+    # imshow(dataset[idx][0].permute(1,2,0),denormalize=True)
+    # tmp = label_converter.label2color(dataset[idx][1].permute(1,2,0))
+    # imshow(tmp)
     
-    dataset = Colorize_PretrainDataset()
-    idx = 0
-    plt.imshow(dataset[idx][1].permute(1,2,0))
-    plt.show()
-    plt.imshow(dataset[idx][0], cmap="gray")
-    plt.show()
+    # dataset = Colorize_PretrainDataset()
+    # idx = 0
+    # plt.imshow(dataset[idx][1].permute(1,2,0))
+    # plt.show()
+    # plt.imshow(dataset[idx][0], cmap="gray")
+    # plt.show()
 
-    dataset = Transformation_PretrainDataset()
-    idx = 0
-    plt.imshow(dataset[idx][0].permute(1,2,0))
-    plt.show()
-    plt.imshow(dataset[idx][1].permute(1,2,0))
+    # dataset = Transformation_PretrainDataset()
+    # idx = 0
+    # plt.imshow(dataset[idx][0].permute(1,2,0))
+    # plt.show()
+    # plt.imshow(dataset[idx][1].permute(1,2,0))
 
-    #dataset = MICCAIDataset()
-    #dataset = Colorize_PretrainDataset()
-    dataset = Shuffle_PretrainDataset()
-    idx = 0
-    plt.imshow(dataset[idx][1].permute(1,2,0))
-    plt.show()
-    plt.imshow(dataset[idx][0])
-    plt.show()
+    # #dataset = MICCAIDataset()
+    # #dataset = Colorize_PretrainDataset()
+    # dataset = Shuffle_PretrainDataset()
+    # idx = 0
+    # plt.imshow(dataset[idx][1].permute(1,2,0))
+    # plt.show()
+    # plt.imshow(dataset[idx][0])
+    # plt.show()

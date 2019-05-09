@@ -28,8 +28,39 @@ class DICELoss(nn.Module):
             iflat = scores[:,cl,:,:].contiguous().view(-1)
             tflat = target_one_hot[:,cl,:,:].contiguous().view(-1)
             intersection = (iflat * tflat).sum()
-            loss += (1 - ((2. * intersection) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
+            loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
         return loss/self.weights.sum(), scores, target_one_hot
+
+class BatchWeightDICELoss(nn.Module):
+    #DICE Loss Function
+
+    def __init__(self):
+        super(BatchWeightDICELoss, self).__init__()
+
+    def forward(self, scores, target, smooth = 1e-7):
+        """DICE Loss
+        Args:
+            scores (tensor):  Predicted scores for every class on the image,
+                shape: [batch_size,num_classes,w,h]
+            targets (tensor): Ground truth labels,
+                shape: [batch_size,]
+        """
+        #calculate batch weight from target:
+        scores = F.softmax(scores, dim=1)
+        number_of_classes = scores.shape[1]
+        target_one_hot = torch.zeros_like(scores)
+        target_one_hot.scatter_(1, target.view(scores.shape[0],1,scores.shape[2],scores.shape[3]), 1)
+        weights = torch.sum(target_one_hot, dim = (0,2,3))
+        weights[weights == 0] = torch.max(weights)
+        weights = (scores.shape[0]*scores.shape[2]*scores.shape[3])/weights
+        print(weights)
+        loss = 0
+        for cl in range(number_of_classes):
+            iflat = scores[:,cl,:,:].contiguous().view(-1)
+            tflat = target_one_hot[:,cl,:,:].contiguous().view(-1)
+            intersection = (iflat * tflat).sum()
+            loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))*weights[cl]
+        return loss/weights.sum(), scores, target_one_hot
     
     
 # define dice loss function
@@ -94,11 +125,13 @@ def label_accuracy(probas, true_1_hot):
 
 if __name__ == "__main__":
     x = torch.rand([1,3,2,2])
-    gt = torch.tensor([[[1,2],[2,0]]])
+    gt = torch.tensor([[[2,0],[2,0]]])
     weights = torch.tensor([1.0,1,1])
     DICE = DICELoss(weights)
-    print(diceloss(x, gt)[0])#, diceloss(x, gt)[1], diceloss(x, gt)[2])
+    BatchWeightDICELoss = BatchWeightDICELoss()
+    print(dice_loss_max(x, gt)[0])#, diceloss(x, gt)[1], diceloss(x, gt)[2])
     print(DICE(x, gt)[0])#, DICE(x, gt)[1], DICE(x, gt)[2])
+    print(BatchWeightDICELoss(x, gt)[0])
     
 # # test functions
 # x = torch.tensor([[[0.1,0.2],[0.3,0.4]],[[0.2,0.3],[0.3,0.4]],[[0.3,0.4],[0.4,0.5]]]).reshape(1,3,2,2)

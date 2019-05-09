@@ -13,10 +13,12 @@ class ConvRelu(nn.Module):
     def __init__(self, in_: int, out: int):
         super(ConvRelu, self).__init__()
         self.conv = conv3x3(in_, out)
+        self.bn = nn.BatchNorm2d(out)
         self.activation = nn.ReLU(inplace=True)
 
     def forward(self, x):
         x = self.conv(x)
+        x = self.bn(x)
         x = self.activation(x)
         return x
 
@@ -142,34 +144,47 @@ class UNet16(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
         self.conv1 = nn.Sequential(self.encoder[0],
+                                   nn.BatchNorm2d(64),
                                    self.relu,
+                                   nn.BatchNorm2d(64),
                                    self.encoder[2],
                                    self.relu)
 
         self.conv2 = nn.Sequential(self.encoder[5],
+                                   nn.BatchNorm2d(128),
                                    self.relu,
                                    self.encoder[7],
+                                   nn.BatchNorm2d(128),
                                    self.relu)
 
         self.conv3 = nn.Sequential(self.encoder[10],
+                                   nn.BatchNorm2d(256),
                                    self.relu,
                                    self.encoder[12],
+                                   nn.BatchNorm2d(256),
                                    self.relu,
                                    self.encoder[14],
+                                   nn.BatchNorm2d(256),
                                    self.relu)
 
         self.conv4 = nn.Sequential(self.encoder[17],
+                                   nn.BatchNorm2d(512),
                                    self.relu,
                                    self.encoder[19],
+                                   nn.BatchNorm2d(512),
                                    self.relu,
                                    self.encoder[21],
+                                   nn.BatchNorm2d(512),
                                    self.relu)
 
         self.conv5 = nn.Sequential(self.encoder[24],
+                                   nn.BatchNorm2d(512),
                                    self.relu,
                                    self.encoder[26],
+                                   nn.BatchNorm2d(512),
                                    self.relu,
                                    self.encoder[28],
+                                   nn.BatchNorm2d(512),
                                    self.relu)
 
         self.center = DecoderBlock(512, num_filters * 8 * 2, num_filters * 8)
@@ -197,11 +212,11 @@ class UNet16(nn.Module):
         dec2 = self.dec2(torch.cat([dec3, conv2], 1))
         dec1 = self.dec1(torch.cat([dec2, conv1], 1))
 
-        if self.num_classes > 1:
-            x_out = F.log_softmax(self.final(dec1), dim=1)
-        else:
-            x_out = self.final(dec1)
-
+        # if self.num_classes > 1:
+        #     x_out = F.log_softmax(self.final(dec1), dim=1)
+        # else:
+        #     x_out = self.final(dec1)
+        x_out = self.final(dec1)
         return x_out
 
 
@@ -292,10 +307,11 @@ class LinkNet34(nn.Module):
         f4 = self.finalrelu2(f3)
         f5 = self.finalconv3(f4)
 
-        if self.num_classes > 1:
-            x_out = F.log_softmax(f5, dim=1)
-        else:
-            x_out = f5
+        # if self.num_classes > 1:
+        #     x_out = F.log_softmax(f5, dim=1)
+        # else:
+        #     x_out = f5
+        x_out = f5
         return x_out
 
 
