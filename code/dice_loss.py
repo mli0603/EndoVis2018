@@ -53,7 +53,7 @@ class BatchWeightDICELoss(nn.Module):
         weights = torch.sum(target_one_hot, dim = (0,2,3))
         weights[weights == 0] = torch.max(weights)
         weights = (scores.shape[0]*scores.shape[2]*scores.shape[3])/weights
-        print(weights)
+        #print(weights)
         loss = 0
         for cl in range(number_of_classes):
             iflat = scores[:,cl,:,:].contiguous().view(-1)
