@@ -60,7 +60,7 @@ class MICCAIDataset(Dataset):
         if self.transform is not None:
             img,label = transforms.augment(img,label) 
         
-        # apply totensor and normalization only to img
+        # apply normalization only to img
         norm = transforms.Normalize()
         img = norm(img)
             
@@ -81,6 +81,7 @@ class Transformation_PretrainDataset(MICCAIDataset):
         #get img from file and resize it to 320x256 which is what we want
         img = Image.open(img_path)
         img = img.resize((320, 256))
+        # change to 3 channels
         img = np.array(img)
         label = Image.open(label_path)
         label = label.resize((320, 256))
@@ -88,8 +89,14 @@ class Transformation_PretrainDataset(MICCAIDataset):
         
         [label,_] = self.randomShiftScaleRotate(img,mask=None)      
         
+        # apply normalization
+        norm = transforms.Normalize()
+        img = norm(img)
+        label = norm(label)
+        
         img = torch.from_numpy(img).permute(2, 0, 1)
         label = torch.from_numpy(label).permute(2, 0, 1)
+        
         return img,label
 
 class Colorize_PretrainDataset(MICCAIDataset):
@@ -154,7 +161,13 @@ class Shuffle_PretrainDataset(MICCAIDataset):
         #     img = norm(img)
         #pil2tensor = transforms.ToTensor()    
         #img = pil2tensor(img)
-        img = torch.from_numpy(img)
+        
+        # apply normalization
+        norm = transforms.Normalize()
+        img = norm(img)
+        label = norm(label)
+        
+        img = torch.from_numpy(img).permute(2, 0, 1)
         label = torch.from_numpy(label).permute(2, 0, 1)
         return img,label
 

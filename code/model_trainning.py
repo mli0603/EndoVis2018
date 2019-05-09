@@ -5,6 +5,9 @@ from torch.autograd import Variable
 import torch.nn.functional as functional
 from dice_loss import * 
 from visualization import *
+import random
+import copy
+
 
 # TODO: when training, turn this false
 debug = False
@@ -177,3 +180,51 @@ def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
     writer.add_image('Test Prediction', tp_pred, 0)
     
     return dice_score
+
+def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs,train_generator,train_dataset,validation_generator,validation_dataset,writer):
+    print("Training Started!")
+
+    # initialize best_acc for comparison
+    best_acc = 0.0
+    train_iter = 0
+    val_iter = 0
+
+    for epoch in range(num_epochs):
+        print("\nEPOCH " +str(epoch+1)+" of "+str(num_epochs)+"\n")
+
+        # train
+        train_loss, train_iter = train(model,device,scheduler,optimizer,dice_loss,train_generator,train_dataset,writer,train_iter)
+
+        # validate
+        with torch.no_grad():
+            validation_loss, tp, fp, fn, val_iter = validate(model,device,dice_loss,num_class,validation_generator,validation_dataset,writer,val_iter)
+            epoch_acc = (2*tp + 1e-7)/ (2*tp+fp+fn+1e-7)
+            epoch_acc = epoch_acc.mean()
+    
+            # loss
+            writer.add_scalar('data/Training Loss (per epoch)',train_loss,epoch)
+            writer.add_scalar('data/Validation Loss (per epoch)',validation_loss,epoch)
+
+            # randomly show one validation image 
+            sample = validation_dataset.__getitem__(random.randint(0,len(validation_dataset)-1))
+            img = sample[0]*0.5+0.5
+            label = sample[1]
+            tmp_img = sample[0].reshape(1,3,256,320)
+            pred = functional.softmax(model(tmp_img.cuda()), dim=1)
+            pred_label = torch.max(pred,dim=1)[1]
+            pred_label = pred_label.type(label.type())
+            # to plot
+            tp_img = np.array(img)
+            tp_label = train_dataset.label_converter.label2color(label.permute(1,2,0)).transpose(2,0,1)
+            tp_pred = train_dataset.label_converter.label2color(pred_label.permute(1,2,0)).transpose(2,0,1)
+
+            writer.add_image('Input', tp_img, epoch)
+            writer.add_image('Label', tp_label, epoch)
+            writer.add_image('Prediction', tp_pred, epoch)
+
+            # deep copy the model
+            if epoch_acc > best_acc:
+                best_acc = epoch_acc
+                best_model_wts = copy.deepcopy(model.state_dict())
+            
+    return best_model_wts
