@@ -125,10 +125,10 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         
         # find best and worst
         if worst_dice > curr_dice:
-            worst_indx = batch
+            worst_batch = batch
             worst_dice = curr_dice
         if best_dice < curr_dice:
-            best_indx = batch
+            best_batch = batch
             best_dice = curr_dice
         
         if debug:
@@ -140,7 +140,7 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Dice score {:1.2f}'.format(i_class, tp_val,fp_val,fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
     print('-' * 10)
     
-    return validation_loss, tp, fp, fn, n_itr,[batch,worst_dice],[batch,best_dice]
+    return validation_loss, tp, fp, fn, n_itr,[worst_batch,worst_dice],[best_batch,best_dice]
 
 
 def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
