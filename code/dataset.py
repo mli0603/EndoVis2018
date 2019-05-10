@@ -53,8 +53,8 @@ class MICCAIDataset(Dataset):
 #         plt.show()
         label = label.resize((320, 256))
         label = np.array(label, dtype='int32')
-        idx = (label[:, :, 0] * 256 + label[:, :, 1]) * 256 + label[:, :, 2]
-        label = self.label_converter.color2label(idx)
+        label_indx = (label[:, :, 0] * 256 + label[:, :, 1]) * 256 + label[:, :, 2]
+        label = self.label_converter.color2label(label_indx)
         
         # augment dataset
         if self.transform is not None:
@@ -67,7 +67,9 @@ class MICCAIDataset(Dataset):
         img = torch.from_numpy(img).permute(2, 0, 1)
         label = torch.from_numpy(label).reshape([1,label.shape[0],label.shape[1]])
         
-        return img,label
+        sample = {'img':img,'label':label,'indx':idx}
+        
+        return sample
 
 class Transformation_PretrainDataset(MICCAIDataset):
     def __init__(self, data_path="../data/", data_type = "train", transform=None):
@@ -97,7 +99,9 @@ class Transformation_PretrainDataset(MICCAIDataset):
         img = torch.from_numpy(img).permute(2, 0, 1)
         label = torch.from_numpy(label).permute(2, 0, 1)
         
-        return img,label
+        sample = {'img':img,'label':label,'idx':idx}
+        
+        return sample
 
 class Colorize_PretrainDataset(MICCAIDataset):
     def __init__(self, data_path="../data/", data_type = "train", transform=None):
@@ -116,7 +120,9 @@ class Colorize_PretrainDataset(MICCAIDataset):
             
         img = torch.from_numpy(img)
         label = torch.from_numpy(label).permute(2, 0, 1)
-        return img,label
+        
+        sample = {'img':img,'label':label,'indx':idx}
+        return sample
 
 class Shuffle_PretrainDataset(MICCAIDataset):
     def __init__(self, data_path="../data/", data_type = "train", transform=None, n=30,seed =1):
@@ -169,7 +175,10 @@ class Shuffle_PretrainDataset(MICCAIDataset):
         
         img = torch.from_numpy(img).permute(2, 0, 1)
         label = torch.from_numpy(label).permute(2, 0, 1)
-        return img,label
+        
+        sample = {'img':img,'label':label,'indx':idx}
+        
+        return sample
 
 
 if __name__ == "__main__":

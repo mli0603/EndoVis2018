@@ -12,7 +12,7 @@ import copy
 # TODO: when training, turn this false
 debug = False
 
-def train(model,device,scheduler,optimizer,dice_loss,train_generator,train_dataset,writer,n_itr):
+def train(model,device,scheduler,optimizer,dice_loss,num_class,train_generator,train_dataset,writer,n_itr):
     # function to train  model for segmentation task
     # params:
         # model
@@ -27,11 +27,14 @@ def train(model,device,scheduler,optimizer,dice_loss,train_generator,train_datas
     model.train()  # Set model to training mode           
 
     running_loss = 0.0
+    tp = torch.zeros(num_class)
+    fp = torch.zeros(num_class)
+    fn = torch.zeros(num_class)
     
     for i_batch, batch in enumerate(train_generator):
         # read img and label
-        img = batch[0]
-        label = batch[1]
+        img = batch['img']
+        label = batch['label']
         
         if debug:        
             # validate if images are parsed correctly
@@ -50,22 +53,28 @@ def train(model,device,scheduler,optimizer,dice_loss,train_generator,train_datas
         
         # forward + backprop + optimize
         outputs = model(img)
-#         loss,_,_ = dice_loss_max(outputs,label.long().squeeze(1))
-        loss,_,_ = dice_loss.forward(outputs, label.long())
+        loss,probas,true_1_hot = dice_loss.forward(outputs, label.long())
         loss.backward()
         optimizer.step()
+        loss.detach()
 
         # statistics
         running_loss += loss.item() * img.size(0)    
         writer.add_scalar('data/training_loss',loss.item(),n_itr)
         n_itr = n_itr + 1
         
+        curr_tp, curr_fp, curr_fn = label_accuracy(probas.cpu(),true_1_hot.cpu())
+        tp += curr_tp
+        fp += curr_fp
+        fn += curr_fn
+        
         if debug:
             break
                 
     train_loss = running_loss / len(train_dataset)
-    print('Epoch Loss: {:.4f}'.format(train_loss))
-    print('-' * 10)
+    print('Training Loss: {:.4f}'.format(train_loss))
+    for i_class, (tp_val, fp_val, fn_val) in enumerate(zip(tp, fp, fn)):
+        print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Dice score {:.2f}'.format(i_class, tp_val,fp_val,fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
     
     return train_loss, n_itr
 
@@ -77,12 +86,15 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
     tp = torch.zeros(num_class)
     fp = torch.zeros(num_class)
     fn = torch.zeros(num_class)
+    worst_dice = 1.0
+    best_dice = 0.0
     
     for i_batch, batch in enumerate(validation_generator):
         # read img and label
-        img = batch[0]
-        label = batch[1]
-
+        img = batch['img']
+        label = batch['label']
+        indx = batch['indx']
+        
         if debug:
             # validate if images are parsed correctly
             print(i_batch, img.shape, label.shape)
@@ -98,7 +110,6 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         # forward
         outputs = model(img)
         # get loss
-#         loss, probas, true_1_hot = dice_loss_max(outputs,label.long().squeeze(1))
         loss, probas, true_1_hot = dice_loss.forward(outputs, label.long())
 
         # statistics
@@ -110,6 +121,15 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         tp += curr_tp
         fp += curr_fp
         fn += curr_fn
+        curr_dice = ((2*curr_tp + 1e-7)/ (2*curr_tp+curr_fp+curr_fn+1e-7)).mean()
+        
+        # find best and worst
+        if worst_dice > curr_dice:
+            worst_indx = batch
+            worst_dice = curr_dice
+        if best_dice < curr_dice:
+            best_indx = batch
+            best_dice = curr_dice
         
         if debug:
             break
@@ -117,10 +137,10 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
     validation_loss = validation_loss / len(validation_dataset)
     print('Vaildation Loss: {:.4f}'.format(validation_loss))
     for i_class, (tp_val, fp_val, fn_val) in enumerate(zip(tp, fp, fn)):
-        print ('{} Class, True Pos {}, False Pos {}, Flase Neg {}'.format(i_class, tp_val,fp_val,fn_val))
+        print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Dice score {:1.2f}'.format(i_class, tp_val,fp_val,fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
     print('-' * 10)
     
-    return validation_loss, tp, fp, fn, n_itr
+    return validation_loss, tp, fp, fn, n_itr,[batch,worst_dice],[batch,best_dice]
 
 
 def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
@@ -133,8 +153,8 @@ def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
     
     for i_batch, batch in enumerate(test_generator):
         # read in images and masks
-        img = batch[0]
-        label = batch[1]
+        img = batch['img']
+        label = batch['label']
         
         # transfer to GPU
         img, label = img.to(device), label.to(device)
@@ -142,7 +162,6 @@ def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
         # forward
         outputs = model(img)
         # get loss
-#         loss, probas, true_1_hot = dice_loss_max(outputs,label.long().squeeze(1))
         loss, probas, true_1_hot = dice_loss.forward(outputs, label.long())
 
         # statistics
@@ -193,38 +212,69 @@ def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs
         print("\nEPOCH " +str(epoch+1)+" of "+str(num_epochs)+"\n")
 
         # train
-        train_loss, train_iter = train(model,device,scheduler,optimizer,dice_loss,train_generator,train_dataset,writer,train_iter)
+        train_loss, train_iter = train(model,device,scheduler,optimizer,dice_loss,num_class,train_generator,train_dataset,writer,train_iter)
 
         # validate
         with torch.no_grad():
-            validation_loss, tp, fp, fn, val_iter = validate(model,device,dice_loss,num_class,validation_generator,validation_dataset,writer,val_iter)
+            validation_loss, tp, fp, fn, val_iter, worst, best = validate(model,device,dice_loss,num_class,validation_generator,validation_dataset,writer,val_iter)
             epoch_acc = (2*tp + 1e-7)/ (2*tp+fp+fn+1e-7)
             epoch_acc = epoch_acc.mean()
     
             # loss
             writer.add_scalar('data/Training Loss (per epoch)',train_loss,epoch)
             writer.add_scalar('data/Validation Loss (per epoch)',validation_loss,epoch)
-
-            # randomly show one validation image 
-            sample = validation_dataset.__getitem__(random.randint(0,len(validation_dataset)-1))
-            img = sample[0]*0.5+0.5
-            label = sample[1]
-            tmp_img = sample[0].reshape(1,3,256,320)
+                
+            # show best and worst 
+            print("worst performance: dice {:.2f}".format(worst[1]))
+            batch = worst[0]
+            img = batch['img']*0.5+0.5
+            label = batch['label']
+            tmp_img = batch['img']
             pred = functional.softmax(model(tmp_img.cuda()), dim=1)
+            tmp_img.cpu()
             pred_label = torch.max(pred,dim=1)[1]
-            pred_label = pred_label.type(label.type())
-            # to plot
-            tp_img = np.array(img)
-            tp_label = train_dataset.label_converter.label2color(label.permute(1,2,0)).transpose(2,0,1)
-            tp_pred = train_dataset.label_converter.label2color(pred_label.permute(1,2,0)).transpose(2,0,1)
+            pred_label = pred_label.cpu().reshape([pred_label.shape[0],1,pred_label.shape[1],pred_label.shape[2]]).type(label.type())
+            # make grid
+            tp_img = torchvision.utils.make_grid(img,nrow=3).numpy()
+            tp_label = torchvision.utils.make_grid(label,nrow=3)[0,:,:]
+            tp_label = tp_label.reshape([1,tp_label.shape[0],tp_label.shape[1]])
+            tp_label = train_dataset.label_converter.label2color(tp_label.permute(1,2,0)).transpose(2,0,1)
+            tp_pred = torchvision.utils.make_grid(pred_label,nrow=3)[0,:,:]
+            tp_pred = tp_pred.reshape([1,tp_pred.shape[0],tp_pred.shape[1]])
+            tp_pred = train_dataset.label_converter.label2color(tp_pred.permute(1,2,0)).transpose(2,0,1)
 
-            writer.add_image('Input', tp_img, epoch)
-            writer.add_image('Label', tp_label, epoch)
-            writer.add_image('Prediction', tp_pred, epoch)
+            writer.add_image('Worst Input', tp_img, epoch)
+            writer.add_image('Worst Label', tp_label, epoch)
+            writer.add_image('Worst Prediction', tp_pred, epoch)            
+
+            print("best performance: dice {:.2f}".format(best[1]))
+            batch = best[0]
+            img = batch['img']*0.5+0.5
+            label = batch['label']
+            tmp_img = batch['img']
+            pred = functional.softmax(model(tmp_img.cuda()), dim=1)
+            tmp_img.cpu()
+            pred_label = torch.max(pred,dim=1)[1]
+            pred_label = pred_label.cpu().reshape([pred_label.shape[0],1,pred_label.shape[1],pred_label.shape[2]]).type(label.type())
+            # make grid
+            tp_img = torchvision.utils.make_grid(img,nrow=3).numpy()
+            tp_label = torchvision.utils.make_grid(label,nrow=3)[0,:,:]
+            tp_label = tp_label.reshape([1,tp_label.shape[0],tp_label.shape[1]])
+            tp_label = train_dataset.label_converter.label2color(tp_label.permute(1,2,0)).transpose(2,0,1)
+            tp_pred = torchvision.utils.make_grid(pred_label,nrow=3)[0,:,:]
+            tp_pred = tp_pred.reshape([1,tp_pred.shape[0],tp_pred.shape[1]])
+            tp_pred = train_dataset.label_converter.label2color(tp_pred.permute(1,2,0)).transpose(2,0,1)
+
+            writer.add_image('best Input', tp_img, epoch)
+            writer.add_image('best Label', tp_label, epoch)
+            writer.add_image('best Prediction', tp_pred, epoch)         
 
             # deep copy the model
             if epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
+                print('Dice Score: {:.4f}'.format(best_acc.item()))
+                
+            print('-' * 10)
             
-    return best_model_wts
+    return best_model_wts, best_acc

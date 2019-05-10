@@ -63,7 +63,7 @@ class BatchWeightDICELoss(nn.Module):
         return loss/weights.sum(), scores, target_one_hot
     
     
-# define dice loss function
+# define dice loss function by Max
 def dice_loss_max(logits, true, eps=1e-7):
     """Computes the Sørensen–Dice loss.
     Note that PyTorch optimizers minimize a loss. In this
