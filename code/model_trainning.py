@@ -74,7 +74,7 @@ def train(model,device,scheduler,optimizer,dice_loss,num_class,train_generator,t
     train_loss = running_loss / len(train_dataset)
     print('Training Loss: {:.4f}'.format(train_loss))
     for i_class, (tp_val, fp_val, fn_val) in enumerate(zip(tp, fp, fn)):
-        print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Dice score {:.2f}'.format(i_class, tp_val,fp_val,fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
+        print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Num Pixel {}, Dice score {:1.2f}'.format(i_class, tp_val,fp_val,fn_val,tp_val+fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
     
     return train_loss, n_itr
 
@@ -111,6 +111,7 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
         outputs = model(img)
         # get loss
         loss, probas, true_1_hot = dice_loss.forward(outputs, label.long())
+        loss.detach()
 
         # statistics
         validation_loss += loss.item() * img.size(0)
@@ -137,7 +138,7 @@ def validate(model,device,dice_loss,num_class,validation_generator,validation_da
     validation_loss = validation_loss / len(validation_dataset)
     print('Vaildation Loss: {:.4f}'.format(validation_loss))
     for i_class, (tp_val, fp_val, fn_val) in enumerate(zip(tp, fp, fn)):
-        print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Dice score {:1.2f}'.format(i_class, tp_val,fp_val,fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
+        print ('{} Class, True Pos {}, False Pos {}, False Neg {}, Num Pixel {}, Dice score {:1.2f}'.format(i_class, tp_val,fp_val,fn_val,tp_val+fn_val,(2*tp_val + 1e-7)/ (2*tp_val+fp_val+fn_val+1e-7)))
     print('-' * 10)
     
     return validation_loss, tp, fp, fn, n_itr,[worst_batch,worst_dice],[best_batch,best_dice]
