@@ -344,14 +344,14 @@ class DeepLabv3_plus(nn.Module):
         x3 = self.aspp3(x)
         x4 = self.aspp4(x)
         x5 = self.global_avg_pool(x)
-        x5 = F.upsample(x5, size=x4.size()[2:], mode='bilinear', align_corners=True)
+        x5 = F.interpolate(x5, size=x4.size()[2:], mode='bilinear', align_corners=True)
 
         x = torch.cat((x1, x2, x3, x4, x5), dim=1)
 
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = F.upsample(x, size=(int(math.ceil(input.size()[-2]/4)),
+        x = F.interpolate(x, size=(int(math.ceil(input.size()[-2]/4)),
                                 int(math.ceil(input.size()[-1]/4))), mode='bilinear', align_corners=True)
 
         low_level_features = self.conv2(low_level_features)
@@ -361,7 +361,7 @@ class DeepLabv3_plus(nn.Module):
 
         x = torch.cat((x, low_level_features), dim=1)
         x = self.last_conv(x)
-        x = F.upsample(x, size=input.size()[2:], mode='bilinear', align_corners=True)
+        x = F.interpolate(x, size=input.size()[2:], mode='bilinear', align_corners=True)
 
         return x
 
