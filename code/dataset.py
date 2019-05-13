@@ -3,21 +3,24 @@ import torch
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
-from  PIL import Image
+from PIL import Image
 import json
-import transforms
 
 from label_conversion import LabelConverter
+from dice_loss import label_accuracy
 from shuffle_puzzle import Puzzle_RandomShuffle
 from visualization import *
+from albumentations import *
+from albumentations.pytorch import *
 
 class MICCAIDataset(Dataset):
-    def __init__(self, data_path="../data/", data_type = "train", transform=None):
+    def __init__(self, data_path="../data/", data_type = "train", transform_both=None, transform_image=None):
         #store some input 
         self.data_path = str(data_path)
         self.data_type = str(data_type)
         self.filename = data_path+"index/"+data_type+"_data.txt"
-        self.transform = transform
+        self.transform_both = transform_both
+        self.transform_image = transform_image
         self.data = []
 
         #parse the txt to store the necessary information of output
@@ -45,25 +48,24 @@ class MICCAIDataset(Dataset):
         img = Image.open(img_path)
         img = img.resize((320, 256))
         img = np.array(img)
-#         print(img.shape)
 
         #parse label color to label number and resize it to 320x256
         label = Image.open(label_path)
-#         plt.imshow(label)
-#         plt.show()
         label = label.resize((320, 256))
         label = np.array(label, dtype='int32')
         label_indx = (label[:, :, 0] * 256 + label[:, :, 1]) * 256 + label[:, :, 2]
         label = self.label_converter.color2label(label_indx)
-        
-        # augment dataset
-        if self.transform is not None:
-            img,label = transforms.augment(img,label) 
-        
-        # apply normalization only to img
-        norm = transforms.Normalize()
-        img = norm(img)
             
+        # augment dataset
+        if self.transform_both is not None:
+            augmented = self.transform_both(image=img,mask=label)
+            img = augmented['image']
+            label = augmented['mask']
+            
+        if self.transform_image is not None:
+            augmented = self.transform_image(image=img)
+            img = augmented['image']
+        
         img = torch.from_numpy(img).permute(2, 0, 1)
         label = torch.from_numpy(label).reshape([1,label.shape[0],label.shape[1]])
         
@@ -182,37 +184,40 @@ class Shuffle_PretrainDataset(MICCAIDataset):
 
 
 if __name__ == "__main__":
-    dataset=MICCAIDataset(transform=transforms)
-    count = torch.zeros(12, dtype=torch.long)
-    for i in range(len(dataset)):
-        label = dataset[i][1]
-        for j in range(12):
-            count[j] += (label == j).sum()
-
-    # label_converter = LabelConverter()
-    # idx = 0
-    # imshow(dataset[idx][0].permute(1,2,0),denormalize=True)
-    # tmp = label_converter.label2color(dataset[idx][1].permute(1,2,0))
-    # imshow(tmp)
+    label_converter = LabelConverter()
     
-    # dataset = Colorize_PretrainDataset()
-    # idx = 0
-    # plt.imshow(dataset[idx][1].permute(1,2,0))
-    # plt.show()
-    # plt.imshow(dataset[idx][0], cmap="gray")
-    # plt.show()
-
-    # dataset = Transformation_PretrainDataset()
-    # idx = 0
-    # plt.imshow(dataset[idx][0].permute(1,2,0))
-    # plt.show()
-    # plt.imshow(dataset[idx][1].permute(1,2,0))
-
-    # #dataset = MICCAIDataset()
-    # #dataset = Colorize_PretrainDataset()
-    # dataset = Shuffle_PretrainDataset()
-    # idx = 0
-    # plt.imshow(dataset[idx][1].permute(1,2,0))
-    # plt.show()
-    # plt.imshow(dataset[idx][0])
-    # plt.show()
+    train_both_aug = Compose([
+        Cutout(num_holes=8,p=0.5),
+        OneOf([
+            ShiftScaleRotate(p=0.5),
+            HorizontalFlip(p=0.8),
+        ])
+    ])
+    train_image_aug = Compose([
+        OneOf([
+            RandomBrightnessContrast(brightness_limit=(-0.2,0.2), contrast_limit=(-0.5,0.5),p=0.9),
+            RandomGamma(gamma_limit=(50,200),p=0.8),
+            MotionBlur(blur_limit=10,p=0.7),
+            HueSaturationValue(hue_shift_limit=0,p=0.8)            
+        ]),
+        Normalize(mean=(0.5,0.5,0.5),std=(0.5,0.5,0.5),p=1),
+    ])
+    
+    val_image_aug = Compose([
+        Normalize(mean=(0.5,0.5,0.5),std=(0.5,0.5,0.5),p=1),
+    ])
+    
+    train_dataset=MICCAIDataset(data_type="train",transform_both=train_both_aug,transform_image=train_image_aug)
+    train_generator = DataLoader(train_dataset,shuffle=False,batch_size=1,num_workers=1)
+    
+    for i_batch, sample_batch in enumerate(train_generator):
+        img = sample_batch['img']
+        label = sample_batch['label']
+        
+        print(img.shape)
+        print(label.shape)
+        
+        imshow(img[0,:,:,:].permute(1,2,0),denormalize=True)
+        tmp = label_converter.label2color(label[0,:,:,:].permute(1,2,0))
+        imshow(tmp,denormalize=False)
+        break
