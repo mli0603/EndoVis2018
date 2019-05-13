@@ -1,4 +1,3 @@
-from visdom import Visdom
 import torch
 import torchvision
 import numpy as np
@@ -39,51 +38,51 @@ def imshow(img, denormalize=False):
     plt.imshow(img)
     plt.show()
 
-# visdom bridge to visualize loss and images
-class Visualizations:
-    def __init__(self, env_name=None):
-        if env_name is None:
-            env_name = str(datetime.now().strftime("%d-%m %Hh%M"))
-        self.env_name = env_name
-        self.vis = Visdom(env=self.env_name)
-        self.loss_win = None
-        self.seg_win = 0
+# # visdom bridge to visualize loss and images
+# class Visualizations:
+#     def __init__(self, env_name=None):
+#         if env_name is None:
+#             env_name = str(datetime.now().strftime("%d-%m %Hh%M"))
+#         self.env_name = env_name
+#         self.vis = Visdom(env=self.env_name)
+#         self.loss_win = None
+#         self.seg_win = 0
 
-    def plot_loss(self, loss, step):
-        self.loss_win = self.vis.line(
-            loss.reshape(1,2),
-            np.array([step,step]).reshape(1,2),
-            win=self.loss_win,
-            update='append' if self.loss_win else None,
-            opts=dict(
-                xlabel='Epoch',
-                ylabel='Loss',
-                title='Loss (mean loss per 1 epoch)',
-                legend=['training', 'validation']
-            )
-        )
+#     def plot_loss(self, loss, step):
+#         self.loss_win = self.vis.line(
+#             loss.reshape(1,2),
+#             np.array([step,step]).reshape(1,2),
+#             win=self.loss_win,
+#             update='append' if self.loss_win else None,
+#             opts=dict(
+#                 xlabel='Epoch',
+#                 ylabel='Loss',
+#                 title='Loss (mean loss per 1 epoch)',
+#                 legend=['training', 'validation']
+#             )
+#         )
         
-    def plot_image(self, img, mask, pred):
-        # param:
-            # img: tensor or np array, (C,W,H)
-        self.vis.image(
-            img,
-            win=self.seg_win,
-            opts=dict(title='Sample Segmentation Input', caption='Input')
-        )
-        self.seg_win += 1
-        self.vis.image(
-            mask,
-            win=self.seg_win,
-            opts=dict(title='Sample Segmentation Label', caption='Label')
-        )
-        self.seg_win += 1
-        self.vis.image(
-            pred,
-            win=self.seg_win,
-            opts=dict(title='Sample Segmentation Pred', caption='Pred')
-        )
-        self.seg_win += 1
+#     def plot_image(self, img, mask, pred):
+#         # param:
+#             # img: tensor or np array, (C,W,H)
+#         self.vis.image(
+#             img,
+#             win=self.seg_win,
+#             opts=dict(title='Sample Segmentation Input', caption='Input')
+#         )
+#         self.seg_win += 1
+#         self.vis.image(
+#             mask,
+#             win=self.seg_win,
+#             opts=dict(title='Sample Segmentation Label', caption='Label')
+#         )
+#         self.seg_win += 1
+#         self.vis.image(
+#             pred,
+#             win=self.seg_win,
+#             opts=dict(title='Sample Segmentation Pred', caption='Pred')
+#         )
+#         self.seg_win += 1
         
         
 # # test functions
