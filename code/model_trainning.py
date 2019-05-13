@@ -182,21 +182,21 @@ def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
     print('-' * 10)
     
     # visualize current prediction
-    sample = test_dataset.__getitem__(0)
-    img = sample[0]*0.5+0.5
-    label = sample[1]
-    tmp_img = sample[0].reshape(1,3,256,320)
-    pred = functional.softmax(model(tmp_img.cuda()), dim=1)
-    pred_label = torch.max(pred,dim=1)[1]
-    pred_label = pred_label.type(label.type())
-    # to plot
-    tp_img = np.array(img)
-    tp_label = test_dataset.label_converter.label2color(label.permute(1,2,0)).transpose(2,0,1)
-    tp_pred = test_dataset.label_converter.label2color(pred_label.permute(1,2,0)).transpose(2,0,1)
+    # sample = test_dataset.__getitem__(0)
+    # img = sample[0]*0.5+0.5
+    # label = sample[1]
+    # tmp_img = sample[0].reshape(1,3,256,320)
+    # pred = functional.softmax(model(tmp_img.cuda()), dim=1)
+    # pred_label = torch.max(pred,dim=1)[1]
+    # pred_label = pred_label.type(label.type())
+    # # to plot
+    # tp_img = np.array(img)
+    # tp_label = test_dataset.label_converter.label2color(label.permute(1,2,0)).transpose(2,0,1)
+    # tp_pred = test_dataset.label_converter.label2color(pred_label.permute(1,2,0)).transpose(2,0,1)
 
-    writer.add_image('Test Input', tp_img, 0)
-    writer.add_image('Test Label', tp_label, 0)
-    writer.add_image('Test Prediction', tp_pred, 0)
+    # writer.add_image('Test Input', tp_img, 0)
+    # writer.add_image('Test Label', tp_label, 0)
+    # writer.add_image('Test Prediction', tp_pred, 0)
     
     return dice_score
 
@@ -225,49 +225,49 @@ def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs
             writer.add_scalar('data/Validation Loss (per epoch)',validation_loss,epoch)
                 
             # show best and worst 
-            print("worst performance: dice {:.2f}".format(worst[1]))
-            batch = worst[0]
-            img = batch['img']*0.5+0.5
-            label = batch['label']
-            tmp_img = batch['img']
-            pred = functional.softmax(model(tmp_img.cuda()), dim=1)
-            tmp_img.cpu()
-            pred_label = torch.max(pred,dim=1)[1]
-            pred_label = pred_label.cpu().reshape([pred_label.shape[0],1,pred_label.shape[1],pred_label.shape[2]]).type(label.type())
-            # make grid
-            tp_img = torchvision.utils.make_grid(img,nrow=3).numpy()
-            tp_label = torchvision.utils.make_grid(label,nrow=3)[0,:,:]
-            tp_label = tp_label.reshape([1,tp_label.shape[0],tp_label.shape[1]])
-            tp_label = train_dataset.label_converter.label2color(tp_label.permute(1,2,0)).transpose(2,0,1)
-            tp_pred = torchvision.utils.make_grid(pred_label,nrow=3)[0,:,:]
-            tp_pred = tp_pred.reshape([1,tp_pred.shape[0],tp_pred.shape[1]])
-            tp_pred = train_dataset.label_converter.label2color(tp_pred.permute(1,2,0)).transpose(2,0,1)
+            # print("worst performance: dice {:.2f}".format(worst[1]))
+            # batch = worst[0]
+            # img = batch['img']*0.5+0.5
+            # label = batch['label']
+            # tmp_img = batch['img']
+            # pred = functional.softmax(model(tmp_img.cuda()), dim=1)
+            # tmp_img.cpu()
+            # pred_label = torch.max(pred,dim=1)[1]
+            # pred_label = pred_label.cpu().reshape([pred_label.shape[0],1,pred_label.shape[1],pred_label.shape[2]]).type(label.type())
+            # # make grid
+            # tp_img = torchvision.utils.make_grid(img,nrow=3).numpy()
+            # tp_label = torchvision.utils.make_grid(label,nrow=3)[0,:,:]
+            # tp_label = tp_label.reshape([1,tp_label.shape[0],tp_label.shape[1]])
+            # tp_label = train_dataset.label_converter.label2color(tp_label.permute(1,2,0)).transpose(2,0,1)
+            # tp_pred = torchvision.utils.make_grid(pred_label,nrow=3)[0,:,:]
+            # tp_pred = tp_pred.reshape([1,tp_pred.shape[0],tp_pred.shape[1]])
+            # tp_pred = train_dataset.label_converter.label2color(tp_pred.permute(1,2,0)).transpose(2,0,1)
 
-            writer.add_image('Worst Input', tp_img, epoch)
-            writer.add_image('Worst Label', tp_label, epoch)
-            writer.add_image('Worst Prediction', tp_pred, epoch)            
+            # writer.add_image('Worst Input', tp_img, epoch)
+            # writer.add_image('Worst Label', tp_label, epoch)
+            # writer.add_image('Worst Prediction', tp_pred, epoch)            
 
-            print("best performance: dice {:.2f}".format(best[1]))
-            batch = best[0]
-            img = batch['img']*0.5+0.5
-            label = batch['label']
-            tmp_img = batch['img']
-            pred = functional.softmax(model(tmp_img.cuda()), dim=1)
-            tmp_img.cpu()
-            pred_label = torch.max(pred,dim=1)[1]
-            pred_label = pred_label.cpu().reshape([pred_label.shape[0],1,pred_label.shape[1],pred_label.shape[2]]).type(label.type())
-            # make grid
-            tp_img = torchvision.utils.make_grid(img,nrow=3).numpy()
-            tp_label = torchvision.utils.make_grid(label,nrow=3)[0,:,:]
-            tp_label = tp_label.reshape([1,tp_label.shape[0],tp_label.shape[1]])
-            tp_label = train_dataset.label_converter.label2color(tp_label.permute(1,2,0)).transpose(2,0,1)
-            tp_pred = torchvision.utils.make_grid(pred_label,nrow=3)[0,:,:]
-            tp_pred = tp_pred.reshape([1,tp_pred.shape[0],tp_pred.shape[1]])
-            tp_pred = train_dataset.label_converter.label2color(tp_pred.permute(1,2,0)).transpose(2,0,1)
+            # print("best performance: dice {:.2f}".format(best[1]))
+            # batch = best[0]
+            # img = batch['img']*0.5+0.5
+            # label = batch['label']
+            # tmp_img = batch['img']
+            # pred = functional.softmax(model(tmp_img.cuda()), dim=1)
+            # tmp_img.cpu()
+            # pred_label = torch.max(pred,dim=1)[1]
+            # pred_label = pred_label.cpu().reshape([pred_label.shape[0],1,pred_label.shape[1],pred_label.shape[2]]).type(label.type())
+            # # make grid
+            # tp_img = torchvision.utils.make_grid(img,nrow=3).numpy()
+            # tp_label = torchvision.utils.make_grid(label,nrow=3)[0,:,:]
+            # tp_label = tp_label.reshape([1,tp_label.shape[0],tp_label.shape[1]])
+            # tp_label = train_dataset.label_converter.label2color(tp_label.permute(1,2,0)).transpose(2,0,1)
+            # tp_pred = torchvision.utils.make_grid(pred_label,nrow=3)[0,:,:]
+            # tp_pred = tp_pred.reshape([1,tp_pred.shape[0],tp_pred.shape[1]])
+            # tp_pred = train_dataset.label_converter.label2color(tp_pred.permute(1,2,0)).transpose(2,0,1)
 
-            writer.add_image('best Input', tp_img, epoch)
-            writer.add_image('best Label', tp_label, epoch)
-            writer.add_image('best Prediction', tp_pred, epoch)         
+            # writer.add_image('best Input', tp_img, epoch)
+            # writer.add_image('best Label', tp_label, epoch)
+            # writer.add_image('best Prediction', tp_pred, epoch)         
 
             # deep copy the model
             if epoch_acc > best_acc:
@@ -278,3 +278,4 @@ def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs
             print('-' * 10)
             
     return best_model_wts, best_acc
+    

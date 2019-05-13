@@ -31,6 +31,54 @@ class DICELoss(nn.Module):
             loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
         return loss/self.weights.sum(), scores, target_one_hot
 
+class SuperLabelDICELoss(nn.Module):
+    #DICE Loss Function
+
+    def __init__(self, weights, _lambda = 0.1):
+        #weights(tensor): weights for every class when calculating dice loss
+        super(SuperLabelDICELoss, self).__init__()
+        self.weights = weights
+        self._lambda = _lambda
+
+    def forward(self, scores, target):
+        """DICE Loss
+        Args:
+            scores (tensor):  Predicted scores for every class on the image,
+                shape: [batch_size,num_classes,w,h]
+            targets (tensor): Ground truth labels,
+                shape: [batch_size,]
+        """
+        superclass_scores, class_score, super2sub = scores
+        number_of_classes = class_score.shape[1]
+        number_of_super_classes = len(super2sub)
+        super_target = torch.zeros_like(target).long()
+        for i in range(number_of_super_classes):
+            for j in super2sub[i]:
+                super_target[target == j] = i
+        target_one_hot = torch.zeros_like(class_score)
+        target_one_hot.scatter_(1, target.view(class_score.shape[0],1,class_score.shape[2],class_score.shape[3]), 1)
+        super_target_one_hot = torch.zeros_like(class_score)
+        super_target_one_hot.scatter_(1, super_target.view(superclass_scores.shape[0],1,superclass_scores.shape[2],superclass_scores.shape[3]), 1)
+        smooth = 1e-7
+        super_class_loss = 0
+        final_class_loss = 0
+        for cl in range(number_of_super_classes):
+            iflat = superclass_scores[:,cl,:,:].contiguous().view(-1)
+            tflat = super_target_one_hot[:,cl,:,:].contiguous().view(-1)
+            intersection = (iflat * tflat).sum()
+            super_class_loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))
+        for cl in range(number_of_classes):
+            iflat = class_score[:,cl,:,:].contiguous().view(-1)
+            tflat = target_one_hot[:,cl,:,:].contiguous().view(-1)
+            intersection = (iflat * tflat).sum()
+            final_class_loss += (1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)))*self.weights[cl]
+        loss = self._lambda*super_class_loss/number_of_super_classes + final_class_loss/self.weights.sum()
+        final_class_score = torch.zeros_like(class_score)
+        for i in range(number_of_super_classes):
+            for j in super2sub[i]:
+                final_class_score[:,j,:,:] = class_score[:,j,:,:]*superclass_scores[:,i,:,:]
+        return loss, final_class_score, target_one_hot
+
 class BatchWeightDICELoss(nn.Module):
     #DICE Loss Function
 
