@@ -201,7 +201,7 @@ def test(model,device,dice_loss,num_class,test_generator,test_dataset,writer):
     
     return dice_score
 
-def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs,train_generator,train_dataset,validation_generator,validation_dataset,writer):
+def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs,train_generator,train_dataset,validation_generator,validation_dataset,writer,model_path):
     print("Training Started!")
 
     # initialize best_acc for comparison
@@ -275,6 +275,9 @@ def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print('Dice Score: {:.4f}'.format(best_acc.item()))
+
+                if epoch > 50:
+                	torch.save(model.state_dict(), model_path)
                 
             print('-' * 10)
             

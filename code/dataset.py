@@ -66,7 +66,7 @@ class MICCAIDataset(Dataset):
             augmented = self.transform_image(image=img)
             img = augmented['image']
         
-        img = torch.from_numpy(img).permute(2, 0, 1)
+        img = torch.from_numpy(img).permute(2, 0, 1).float()
         label = torch.from_numpy(label).reshape([1,label.shape[0],label.shape[1]])
         
         sample = {'img':img,'label':label,'indx':idx}
