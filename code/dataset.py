@@ -12,6 +12,7 @@ from shuffle_puzzle import Puzzle_RandomShuffle
 from visualization import *
 from albumentations import *
 from albumentations.pytorch import *
+from customized_transform import *
 
 class MICCAIDataset(Dataset):
     def __init__(self, data_path="../data/", data_type = "train", transform_both=None, transform_image=None):
@@ -189,17 +190,18 @@ if __name__ == "__main__":
     train_both_aug = Compose([
         Cutout(num_holes=8,p=0.5),
         OneOf([
-            ShiftScaleRotate(p=0.5),
+            ShiftScaleRotate(rotate_limit=15,p=0.5),
             HorizontalFlip(p=0.8),
         ])
     ])
     train_image_aug = Compose([
         OneOf([
-            RandomBrightnessContrast(brightness_limit=(-0.2,0.2), contrast_limit=(-0.5,0.5),p=0.9),
-            RandomGamma(gamma_limit=(50,200),p=0.8),
-            MotionBlur(blur_limit=10,p=0.7),
-            HueSaturationValue(hue_shift_limit=0,p=0.8)            
+            RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2,p=0.7),
+            RandomGamma(gamma_limit=(50,200),p=0.7),        
+            HueSaturationValue(p=0.7),            
         ]),
+        MotionBlur(blur_limit=7,p=0.7),
+        RandomSpotlight(p=0.7),
         Normalize(mean=(0.5,0.5,0.5),std=(0.5,0.5,0.5),p=1),
     ])
     
