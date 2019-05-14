@@ -76,7 +76,7 @@ class SuperLabelDICELoss(nn.Module):
         final_class_score = torch.zeros_like(class_score)
         for i in range(number_of_super_classes):
             for j in super2sub[i]:
-                final_class_score[:,j,:,:] = class_score[:,j,:,:]*superclass_scores[:,i,:,:]
+                final_class_score[:,j,:,:] = class_score[:,j,:,:] * superclass_scores[:,i,:,:]
         return loss, final_class_score, target_one_hot
 
 class BatchWeightDICELoss(nn.Module):
