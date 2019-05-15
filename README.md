@@ -10,7 +10,7 @@ start tensorboard by "tensorboard --logdir=<dir_to_store_log_file>"
 
 # Result
 
-### Mini-Data (20%)
+### Mini-Data (20% uniform subsampling)
 |Network| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |UNet	|0.87	|0.86	|0.73	|0.76	|0.82	|0.84	|0.68	|0.85	|0.00	|0.66	|0.88	|0.58	|0.71|
