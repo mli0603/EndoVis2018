@@ -8,11 +8,31 @@ pip install tensorflow
 
 start tensorboard by "tensorboard --logdir=<dir_to_store_log_file>"
 
-# Log
-1. vanilla_trained_unet.py: no data augmentation, no pretraining, using Max's dice loss (no per class loss calculation)
-dice score: 0.62
+# Result
 
-2. vanilla_trained_unet_new_loss.py: no data augmentation, no pretraining, using Hao's dice loss (per class loss calculation, all weights initialized to 1)
-dice score: 0.74
+### Mini-Data (20%)
+|Network| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
+|Unet_min	|0.87	|0.86	|0.73	|0.76	|0.82	|0.84	|0.68	|0.85	|0.00	|0.66	|0.88	|0.58	|0.71|
+|albunet	|0.92	|0.91	|0.80	|0.79	|0.90	|0.90	|0.68	|0.78	|0.00	|0.76	|0.91	|0.71	|0.76|
+|superlabel_albunet	|0.93	|0.93	|0.82	|0.80	|0.91	|0.90	|0.62	|0.86	|0.00	|0.78	|0.92	|0.77	|0.77|
+|deeplabv3+_min	|0.91	|0.93	|0.81	|0.82	|0.94	|0.87	|0.51	|0.60	|0.00	|0.76	|0.92	|0.73	|0.73|
+|superlabel_deeplabv3+_min	|0.93	|0.93	|0.83	|0.79	|0.91	|0.90	|0.64	|0.85	|0.00	|0.79	|0.92	|0.82	|0.78|
+|deeplabv3+_aug_min | 0.90	|0.94	|0.80	|0.84	|0.94	|0.84	|0.53	|0.68	|0.00	|0.59	|0.81	|0.81	|0.72|
+|superlabel_deeplabv3+_aug_min	|0.94	|0.93	|0.83	|0.81	|0.92	|0.92	|0.64	|0.84	|0.00	|0.81	|0.94	|0.83	|0.78|
 
-3. aug_trained_unet.py: data augmentation (distort_limit, shiftscalerotate, randomflip, randomcontrast, randomfilter, randomnoise), no pretraining, using Hao's dice loss (per class loss calculation, all weights initialized to 1)
+### Sequence data split
+|Network| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
+|Unet_seq	|0.66	0.87	0.76	0.77	0.41	0.22	0.35	0.22	0.00	0.09	0.53	0.00	0.41	0.6294
+albunet_seq	0.69	0.90	0.76	0.78	0.51	0.29	0.38	0.15	0.00	0.23	0.59	0.01	0.44	0.6049
+superlabel_albunet	0.75	0.94	0.79	0.84	0.60	0.43	0.43	0.45	0.00	0.45	0.62	0.00	0.53	0.5455
+deeplabv3+_seq	0.74	0.89	0.76	0.80	0.65	0.29	0.30	0.40	0.00	0.06	0.56	0.00	0.45	0.5975
+superlabel_deeplabv3+_seq	0.74	0.92	0.78	0.83	0.64	0.33	0.33	0.39	0.00	0.20	0.59	0.00	0.48	0.6048
+
+### Random data split
+|Network| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
+superlabel_albunet	0.96	0.96	0.9	0.88	0.96	0.95	0.72	0.9	0	0.83	0.96	0.87	0.824166667
+DeepLabV3+	0.96	0.95	0.89	0.87	0.96	0.96	0.69	0.9	0.37	0.84	0.97	0.86	0.85
+DeepLabv3+SuperLabel	0.97	0.96	0.89	0.87	0.96	0.96	0.7	0.9	0.38	0.82	0.96	0.89	0.86
