@@ -8,6 +8,9 @@ pip install tensorflow
 
 start tensorboard by "tensorboard --logdir=<dir_to_store_log_file>"
 
+# Final Report
+See [pdf](materials/15_ZhaoshuoLi_HaoDing_MingyiZheng_final_report) for more details.
+
 # Result
 
 ### Mini-Data (20% uniform subsampling)
