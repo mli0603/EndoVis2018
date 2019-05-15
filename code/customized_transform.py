@@ -5,6 +5,8 @@ import numpy as np
 import cv2
 from dataset import *
 import random
+import albumentations.augmentations.functional as F
+
     
 class RandomSpotlight(ImageOnlyTransform):
     """Simulates spot light
@@ -88,6 +90,61 @@ class RandomSpotlight(ImageOnlyTransform):
                 'alpha': alpha,
                 'flare_center_x': flare_center_x,
                 'flare_center_y': flare_center_y}
+    
+
+class ThreadHueSaturationValue(HueSaturationValue):
+    """Randomly change hue, saturation and value of the input image.
+    Args:
+        hue_shift_limit ((int, int) or int): range for changing hue. If hue_shift_limit is a single int, the range
+            will be (-hue_shift_limit, hue_shift_limit). Default: 20.
+        sat_shift_limit ((int, int) or int): range for changing saturation. If sat_shift_limit is a single int,
+            the range will be (-sat_shift_limit, sat_shift_limit). Default: 30.
+        val_shift_limit ((int, int) or int): range for changing value. If val_shift_limit is a single int, the range
+            will be (-val_shift_limit, val_shift_limit). Default: 20.
+        p (float): probability of applying the transform. Default: 0.5.
+    Targets:
+        image
+    Image types:
+        uint8, float32
+    """
+
+    def __init__(self, hue_shift_limit=50, sat_shift_limit=30, val_shift_limit=20, always_apply=False, thread_idx = 6, p=0.5):
+        super(ThreadHueSaturationValue, self).__init__(always_apply, p)
+        print("init")
+        self.hue_shift_limit = to_tuple(hue_shift_limit)
+        self.sat_shift_limit = to_tuple(sat_shift_limit)
+        self.val_shift_limit = to_tuple(val_shift_limit)
+        self.thread_idx = 6
+
+    def apply(self, image, hue_shift=0, sat_shift=0, val_shift=0, label = None, **params):
+        print("apply")
+        if label is not None:
+            print('thread aug')
+            image = np.array(image)
+        
+            output = image.copy()
+            hsv = image.copy()
+            hsv = F.shift_hsv(hsv, hue_shift, sat_shift, val_shift)
+        
+            thread = np.where(label==self.thread_idx)
+            output[thread] = hsv[thread]
+            
+            return output
+        else:
+            print('thread aug failed')
+            return image
+
+    def get_params(self):
+        print("get param")
+        return {'hue_shift': random.uniform(self.hue_shift_limit[0], self.hue_shift_limit[1]),
+                'sat_shift': random.uniform(self.sat_shift_limit[0], self.sat_shift_limit[1]),
+                'val_shift': random.uniform(self.val_shift_limit[0], self.val_shift_limit[1])}
+    
+    def update_params(self, params, **kwargs):
+        print("update params")
+        params.update({'label': kwargs['label']})
+        return params
+
 
     
 if __name__ == "__main__":
@@ -95,7 +152,6 @@ if __name__ == "__main__":
     img = Image.open(img_path)
     img = img.resize((320, 256))
     imshow(img)
-    
     
     image = np.array(img)
     overlay = np.zeros_like(image)

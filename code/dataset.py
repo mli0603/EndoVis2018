@@ -15,13 +15,14 @@ from albumentations.pytorch import *
 from customized_transform import *
 
 class MICCAIDataset(Dataset):
-    def __init__(self, data_path="../data/", data_type = "train", transform_both=None, transform_image=None):
+    def __init__(self, data_path="../data/", data_type = "train", version = "_min", transform_both=None, transform_image=None, transform_per_class=None):
         #store some input 
         self.data_path = str(data_path)
         self.data_type = str(data_type)
-        self.filename = data_path+"index/"+data_type+"_data.txt"
+        self.filename = data_path+"index/"+data_type+"_data"+version+".txt"
         self.transform_both = transform_both
         self.transform_image = transform_image
+        self.transform_per_class = transform_per_class
         self.data = []
 
         #parse the txt to store the necessary information of output
@@ -62,6 +63,11 @@ class MICCAIDataset(Dataset):
             augmented = self.transform_both(image=img,mask=label)
             img = augmented['image']
             label = augmented['mask']
+            
+        if self.transform_per_class is not None:    
+            print('per class')
+            augmented = self.transform_per_class(image=img,label=label)
+            img = augmented['image']
             
         if self.transform_image is not None:
             augmented = self.transform_image(image=img)
@@ -205,11 +211,17 @@ if __name__ == "__main__":
         Normalize(mean=(0.5,0.5,0.5),std=(0.5,0.5,0.5),p=1),
     ])
     
+    train_per_class_aug = Compose([
+        ThreadHueSaturationValue(hue_shift_limit= (-20,20), sat_shift_limit = (-30,30), val_shift_limit=(-20,20), always_apply=False,p=1.0),
+        Normalize(mean=(0.5,0.5,0.5),std=(0.5,0.5,0.5),p=1),
+    ])
+    
     val_image_aug = Compose([
         Normalize(mean=(0.5,0.5,0.5),std=(0.5,0.5,0.5),p=1),
     ])
     
-    train_dataset=MICCAIDataset(data_type="train",transform_both=train_both_aug,transform_image=train_image_aug)
+  
+    train_dataset=MICCAIDataset(data_type="train",                                transform_both=None,transform_image=None,transform_per_class=train_per_class_aug)
     train_generator = DataLoader(train_dataset,shuffle=False,batch_size=1,num_workers=1)
     
     for i_batch, sample_batch in enumerate(train_generator):
