@@ -1,0 +1,65 @@
+
+superlabel_albunet
+Training Loss: 0.2297
+0 Class, True Pos 51614848.0, False Pos 1542990.0, False Neg 1529261.0, Dice score 0.97
+1 Class, True Pos 10629549.0, False Pos 366124.0, False Neg 291299.0, Dice score 0.97
+2 Class, True Pos 5001236.0, False Pos 438927.0, False Neg 351465.0, Dice score 0.93
+3 Class, True Pos 2267236.0, False Pos 161743.0, False Neg 210124.0, Dice score 0.92
+4 Class, True Pos 19351936.0, False Pos 623918.0, False Neg 707931.0, Dice score 0.97
+5 Class, True Pos 13180947.0, False Pos 505897.0, False Neg 515151.0, Dice score 0.96
+6 Class, True Pos 330099.0, False Pos 77019.0, False Neg 88520.0, Dice score 0.80
+7 Class, True Pos 562399.0, False Pos 37593.0, False Neg 50903.0, Dice score 0.93
+8 Class, True Pos 0.0, False Pos 0.0, False Neg 4192.0, Dice score 0.00
+9 Class, True Pos 463882.0, False Pos 20552.0, False Neg 23634.0, Dice score 0.95
+10 Class, True Pos 9272573.0, False Pos 220393.0, False Neg 218895.0, Dice score 0.98
+11 Class, True Pos 541430.0, False Pos 16235.0, False Neg 20016.0, Dice score 0.97
+Vaildation Loss: 0.2729
+0 Class, True Pos 12638437.0, False Pos 542497.0, False Neg 487066.0, Dice score 0.96
+1 Class, True Pos 2445126.0, False Pos 135977.0, False Neg 91778.0, Dice score 0.96
+2 Class, True Pos 1192883.0, False Pos 134520.0, False Neg 140251.0, Dice score 0.90
+3 Class, True Pos 495668.0, False Pos 63694.0, False Neg 68108.0, Dice score 0.88
+4 Class, True Pos 4712224.0, False Pos 176845.0, False Neg 230420.0, Dice score 0.96
+5 Class, True Pos 3338769.0, False Pos 176374.0, False Neg 155030.0, Dice score 0.95
+6 Class, True Pos 66271.0, False Pos 22414.0, False Neg 27915.0, Dice score 0.72
+7 Class, True Pos 125353.0, False Pos 14319.0, False Neg 14169.0, Dice score 0.90
+8 Class, True Pos 0.0, False Pos 0.0, False Neg 499.0, Dice score 0.00
+9 Class, True Pos 84440.0, False Pos 4025.0, False Neg 29943.0, Dice score 0.83
+10 Class, True Pos 2614727.0, False Pos 97276.0, False Neg 110402.0, Dice score 0.96
+11 Class, True Pos 148377.0, False Pos 15224.0, False Neg 27584.0, Dice score 0.87
+----------
+Dice Score: 0.8248
+----------
+
+
+superlabel_deeplab
+
+Training Loss: 0.2254
+0 Class, True Pos 51797260.0, False Pos 1165434.0, False Neg 1357190.0, Num Pixel 53154448.0, Dice score 0.98
+1 Class, True Pos 10687280.0, False Pos 335935.0, False Neg 244704.0, Num Pixel 10931984.0, Dice score 0.97
+2 Class, True Pos 5040452.0, False Pos 378668.0, False Neg 317462.0, Num Pixel 5357914.0, Dice score 0.94
+3 Class, True Pos 2302375.0, False Pos 143925.0, False Neg 177070.0, Num Pixel 2479445.0, Dice score 0.93
+4 Class, True Pos 19561136.0, False Pos 558322.0, False Neg 541028.0, Num Pixel 20102164.0, Dice score 0.97
+5 Class, True Pos 13329620.0, False Pos 408020.0, False Neg 373665.0, Num Pixel 13703285.0, Dice score 0.97
+6 Class, True Pos 341826.0, False Pos 90463.0, False Neg 77302.0, Num Pixel 419128.0, Dice score 0.80
+7 Class, True Pos 564773.0, False Pos 40542.0, False Neg 48529.0, Num Pixel 613302.0, Dice score 0.93
+8 Class, True Pos 3498.0, False Pos 735.0, False Neg 694.0, Num Pixel 4192.0, Dice score 0.83
+9 Class, True Pos 468632.0, False Pos 13983.0, False Neg 18884.0, Num Pixel 487516.0, Dice score 0.97
+10 Class, True Pos 9310117.0, False Pos 207318.0, False Neg 184506.0, Num Pixel 9494623.0, Dice score 0.98
+11 Class, True Pos 544715.0, False Pos 14420.0, False Neg 16731.0, Num Pixel 561446.0, Dice score 0.97
+
+Vaildation Loss: 0.2862
+0 Class, True Pos 12690064.0, False Pos 538714.0, False Neg 435439.0, Num Pixel 13125503.0, Dice score 0.96
+1 Class, True Pos 2437634.0, False Pos 144313.0, False Neg 99270.0, Num Pixel 2536904.0, Dice score 0.95
+2 Class, True Pos 1181347.0, False Pos 134493.0, False Neg 151787.0, Num Pixel 1333134.0, Dice score 0.89
+3 Class, True Pos 487429.0, False Pos 66826.0, False Neg 76347.0, Num Pixel 563776.0, Dice score 0.87
+4 Class, True Pos 4716330.0, False Pos 175310.0, False Neg 226314.0, Num Pixel 4942644.0, Dice score 0.96
+5 Class, True Pos 3334108.0, False Pos 155819.0, False Neg 159691.0, Num Pixel 3493799.0, Dice score 0.95
+6 Class, True Pos 62172.0, False Pos 22537.0, False Neg 32014.0, Num Pixel 94186.0, Dice score 0.70
+7 Class, True Pos 122323.0, False Pos 11751.0, False Neg 17199.0, Num Pixel 139522.0, Dice score 0.89
+8 Class, True Pos 129.0, False Pos 25.0, False Neg 370.0, Num Pixel 499.0, Dice score 0.40
+9 Class, True Pos 86900.0, False Pos 5371.0, False Neg 27483.0, Num Pixel 114383.0, Dice score 0.84
+10 Class, True Pos 2625497.0, False Pos 83027.0, False Neg 99632.0, Num Pixel 2725129.0, Dice score 0.97
+11 Class, True Pos 147273.0, False Pos 16048.0, False Neg 28688.0, Num Pixel 175961.0, Dice score 0.87
+----------
+Dice Score: 0.8544
+----------

@@ -283,7 +283,7 @@ def run_training(model,device,num_class,scheduler,optimizer,dice_loss,num_epochs
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print('Dice Score: {:.4f}'.format(best_acc.item()))
 
-                if epoch > 50:
+                if epoch > 10:
                 	torch.save(model.state_dict(), model_path)
                 
             print('-' * 10)
