@@ -43,20 +43,25 @@ class MICCAIDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        img_path = self.data_path+"images/seq_"+self.data[idx]["seq"]+"/left_frames/frame"+self.data[idx]["frame"]+".png"
-        label_path = self.data_path+"images/seq_"+self.data[idx]["seq"]+"/labels/frame"+self.data[idx]["frame"]+".png"
+        if self.data_type == "train" or self.data_type == "validattion":
+            prefix = "images/seq_"
+            label_path = self.data_path+prefix+self.data[idx]["seq"]+"/labels/frame"+self.data[idx]["frame"]+".png"
+            #parse label color to label number and resize it to 320x256
+            label = Image.open(label_path)
+            label = label.resize((320, 256))
+            label = np.array(label, dtype='int32')
+            label_indx = (label[:, :, 0] * 256 + label[:, :, 1]) * 256 + label[:, :, 2]
+            label = self.label_converter.color2label(label_indx)
+        else:
+            prefix = "test/seq_"
+        
+        img_path = self.data_path+prefix+self.data[idx]["seq"]+"/left_frames/frame"+self.data[idx]["frame"]+".png"
+        
 
         #get img from file and resize it to 320x256 which is what we want
         img = Image.open(img_path)
         img = img.resize((320, 256))
         img = np.array(img)
-
-        #parse label color to label number and resize it to 320x256
-        label = Image.open(label_path)
-        label = label.resize((320, 256))
-        label = np.array(label, dtype='int32')
-        label_indx = (label[:, :, 0] * 256 + label[:, :, 1]) * 256 + label[:, :, 2]
-        label = self.label_converter.color2label(label_indx)
             
         # augment dataset
         if self.transform_both is not None:
@@ -74,9 +79,12 @@ class MICCAIDataset(Dataset):
             img = augmented['image']
         
         img = torch.from_numpy(img).permute(2, 0, 1).float()
-        label = torch.from_numpy(label).reshape([1,label.shape[0],label.shape[1]])
-        
-        sample = {'img':img,'label':label,'indx':idx}
+
+        if self.data_type == "train" or self.data_type == "validattion":
+            label = torch.from_numpy(label).reshape([1,label.shape[0],label.shape[1]])
+            sample = {'img':img,'label':label,'indx':idx}
+        else:
+            sample = {'img':img,'idx':idx}
         
         return sample
 
