@@ -1,18 +1,11 @@
 # EndoVis2018
-MICCAI challenge for EndoVis2018
-
-# Instruction for Tensorboardx
-
-pip install tensorboardX
-pip install tensorflow
-
-start tensorboard by "tensorboard --logdir=<dir_to_store_log_file>"
+MICCAI challenge for EndoVis2018. The challenge focuses on surgical scene segmentation.
 
 # Final Report
 See [pdf](materials/15_ZhaoshuoLi_HaoDing_MingyiZheng_final_report.pdf) for more details.
 
 # Demo video
-[Click here for the demo video](https://youtu.be/EztXBY7mhCk)
+[![](https://img.youtube.com/vi/EztXBY7mhCk/0.jpg)](https://www.youtube.com/watch?v=EztXBY7mhCk)
 
 # Result
 
@@ -45,6 +38,17 @@ See [pdf](materials/15_ZhaoshuoLi_HaoDing_MingyiZheng_final_report.pdf) for more
 
 ### Visual comparison of with/without superlabel
 see Comparison.ipynb
+
+
+# Instruction for Tensorboardx
+
+```sh
+pip install tensorboardX
+pip install tensorflow
+```
+
+start tensorboard by `tensorboard --logdir=<dir_to_store_log_file>`
+
 
 # Example Notebook
 1. [UNet](code/UNet.ipynb)
